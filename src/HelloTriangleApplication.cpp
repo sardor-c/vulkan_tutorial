@@ -1,5 +1,8 @@
 #include "HelloTriangleApplication.h"
 
+#include <stdexcept>
+#include <vector>
+
 
 namespace {
     constexpr uint32_t WIDTH = 800;

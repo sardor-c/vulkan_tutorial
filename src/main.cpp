@@ -1,8 +1,6 @@
-#define GLFW_INCLUDE_VULKAN
-
 #include "HelloTriangleApplication.h"
 
-#include <cstdlib>
+#include <iostream>
 
 int main() {
     HelloTriangleApplication application;
