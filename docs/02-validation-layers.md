@@ -346,6 +346,8 @@ VkInstance muvaffaqiyatli yaratildi!
 
 Ikkinchi qator **zararsiz**. Vulkan loader layer'larni avval Windows registry'dan qidiradi va u yerda topolmaydi. Bizning layer esa `VK_ADD_LAYER_PATH` orqali topiladi. Bu xabarning chiqishi messenger ishlayotganini ham ko'rsatadi.
 
+Shuningdek, `loader_get_json: Failed to open JSON file ...\Epic Online Services\...` degan xabar chiqishi mumkin. Bu ham **zararsiz**: Epic Games o'z overlay layer'ini registry'da ro'yxatdan o'tkazgan, lekin uning fayli diskda yo'q. Bu sizning kodingizga aloqador emas.
+
 ---
 
 ## ✅ Sinov: layer haqiqatan ishlayaptimi?
