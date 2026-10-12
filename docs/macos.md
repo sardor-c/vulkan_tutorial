@@ -107,7 +107,7 @@ Bu usulni boshqa `vkCreate...` chaqiruvlari uchun ham ishlatish foydali.
 
 ## Keyinroq: logical device (4-dars)
 
-macOS uchun yana bitta qadam **logical device yaratishda** kerak bo'ladi. GPU `VK_KHR_portability_subset` **device extension**'ini qo'llab-quvvatlasa (MoltenVK'da doim qo'llab-quvvatlaydi), uni yoqish **majburiy**. Aks holda validation layer xato beradi. Buni 4-darsda qo'shamiz.
+macOS uchun yana bitta qadam **logical device yaratishda** kerak bo'ladi. GPU `VK_KHR_portability_subset` **device extension**'ini qo'llab-quvvatlasa (MoltenVK'da doim qo'llab-quvvatlaydi), uni yoqish **majburiy**. Aks holda validation layer xato beradi. Bu [4-darsda](04-logical-device.md) (4-qadam) qo'shilgan.
 
 ---
 

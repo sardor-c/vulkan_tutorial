@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <cstring>
 #include "color.h"
+#include "utils.h"
 
 
 namespace {
@@ -23,29 +24,6 @@ namespace {
     constexpr bool enableValidationLayers = true;
 #endif
 
-    VkResult CreateDebugUtilsMessengerEXT(
-        VkInstance instance,
-        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-        const VkAllocationCallbacks* pAllocator,
-        VkDebugUtilsMessengerEXT* pDebugMessenger
-    ) {
-        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-        if (func != nullptr) {
-            return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-        }
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
-
-    void DestroyDebugUtilsMessengerEXT(
-        VkInstance instance,
-        VkDebugUtilsMessengerEXT debugMessenger,
-        const VkAllocationCallbacks* pAllocator
-    ) {
-        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-        if (func != nullptr) {
-            func(instance, debugMessenger, pAllocator);
-        }
-    }
 }
 
 
@@ -67,6 +45,7 @@ void HelloTriangleApplication::initWindow() {
 void HelloTriangleApplication::initVulkan() {
     createInstance();
     setupDebugMessenger();
+    pickPhysicalDevice();
 }
 
 void HelloTriangleApplication::mainLoop() {
@@ -78,7 +57,7 @@ void HelloTriangleApplication::mainLoop() {
 
 void HelloTriangleApplication::cleanup() {
     if (enableValidationLayers) {
-        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+        utils::DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
     }
     vkDestroyInstance(instance, nullptr);
     glfwDestroyWindow(window);
@@ -231,7 +210,7 @@ void HelloTriangleApplication::setupDebugMessenger() {
     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
     populateDebugMessengerCreateInfo(createInfo);
 
-    if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+    if (utils::CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
         throw std::runtime_error("Debug messenger yaratib bo'lmadi");
     }
 }
@@ -254,5 +233,78 @@ VKAPI_ATTR VkBool32 VKAPI_CALL HelloTriangleApplication::debugCallback(
     std::cerr << pCallbackData->pMessage << color::RESET << std::endl;
     return VK_FALSE;
 }
+
+void HelloTriangleApplication::pickPhysicalDevice() {
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+
+    if (deviceCount == 0) {
+        throw std::runtime_error("Vulkan'ni qo'llab-quvvatlovchi GPU topilmadi!");
+    }
+
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+    int highScore = 0;
+    for (const auto& device : devices) {
+        int rate = rateGpu(device);
+        if (rate > highScore) {
+            highScore = rate;
+            physicalDevice = device;
+        }
+    }
+
+    if (physicalDevice == VK_NULL_HANDLE) {
+        throw std::runtime_error("Mos GPU topilmadi!");
+    }
+
+    VkPhysicalDeviceProperties properties;
+    vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+    std::cout << color::YASHIL << debugHeader << "Tanlangan GPU: " << properties.deviceName << " (rate: " << highScore << " )" << color::RESET << std::endl;
+    utils::printDeviceQueueFamilies(physicalDevice);
+    utils::printPhysicalDeviceVRAM(physicalDevice);
+}
+
+
+int HelloTriangleApplication::rateGpu(VkPhysicalDevice device) {
+    QueueFamilyIndices indices = findQueueFamilies(device);
+    if (!indices.isComplete()) {
+        return 0;
+    }
+
+    VkPhysicalDeviceProperties properties;
+    vkGetPhysicalDeviceProperties(device, &properties);
+
+    int score = 0;
+    if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+        score += 100000;
+    }
+    score += properties.limits.maxImageDimension2D;
+    return score;
+}
+
+QueueFamilyIndices HelloTriangleApplication::findQueueFamilies(VkPhysicalDevice device) {
+    QueueFamilyIndices indices;
+
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+    for (uint32_t i = 0; i < queueFamilyCount; i++) {
+        if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            indices.graphicsFamily = i;
+        }
+
+        if (indices.isComplete()) {
+            break;
+        }
+    }
+
+    return indices;
+}
+
+
 
 

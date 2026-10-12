@@ -278,10 +278,12 @@ vkGetPhysicalDeviceProperties(device, &properties);
 
 int score = 0;
 if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-    score += 1000;     // alohida videokarta
+    score += 100000;   // alohida videokarta
 }
 score += properties.limits.maxImageDimension2D;   // katta tekstura = kuchliroq
 ```
+
+**Diqqat:** alohida videokarta uchun beriladigan bonus `maxImageDimension2D` ning eng katta qiymatidan **katta** bo'lishi kerak. Sizning RTX 3060 da bu qiymat `32768`. Bonus, masalan, `1000` yoki `10000` bo'lsa, katta teksturani qo'llab-quvvatlaydigan ichki (integrated) GPU alohida kartadan yuqori ball olib qolishi mumkin. Shuning uchun bonus `100000`.
 
 Yordam: `int rateDevice(VkPhysicalDevice device)` funksiyasini yozing. Mos bo'lmagan GPU uchun u `0` qaytarsin. `pickPhysicalDevice` da esa eng katta ballni saqlab boring.
 
