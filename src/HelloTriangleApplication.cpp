@@ -11,12 +11,13 @@ namespace {
     constexpr uint32_t WIDTH = 800;
     constexpr uint32_t HEIGHT = 600;
 
-    const char* errorDebugHeader = "----[ERROR]---- ";
-    const char* debugHeader = "----[DEBUG]---- ";
+    constexpr const char* debugHeader = "----[ DEBUG ]----";
 
     const std::vector<const char*> validationLayers = {
         "VK_LAYER_KHRONOS_validation"
     };
+
+    constexpr const char* PORTABILITY_SUBSET_EXTENSION = "VK_KHR_portability_subset";
 
 #ifdef NDEBUG
     constexpr bool enableValidationLayers = false;
@@ -46,6 +47,7 @@ void HelloTriangleApplication::initVulkan() {
     createInstance();
     setupDebugMessenger();
     pickPhysicalDevice();
+    createLogicalDevice();
 }
 
 void HelloTriangleApplication::mainLoop() {
@@ -56,6 +58,8 @@ void HelloTriangleApplication::mainLoop() {
 }
 
 void HelloTriangleApplication::cleanup() {
+    vkDestroyDevice(device, nullptr);
+
     if (enableValidationLayers) {
         utils::DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
     }
@@ -67,13 +71,13 @@ void HelloTriangleApplication::cleanup() {
 void HelloTriangleApplication::createInstance() {
 
     if (enableValidationLayers) {
-        std::cout << color::FIRUZA << debugHeader << "Validation layer yoqilgan!" << color::RESET << std::endl;
+            std::cout << utils::infoLog("Validation layer yoqilgan!");
         if (!checkValidationLayerSupport()) {
             throw std::runtime_error("Validation layer yoqilgan, lekin topilmadi!");
         }
     }
     else {
-        std::cout << color::FIRUZA << debugHeader << "Validation layer o'chirilgan!" << color::RESET << std::endl;
+            std::cout << utils::infoLog("Validation layer o'chirilgan!");
     }
 
     VkApplicationInfo appInfo{};
@@ -115,8 +119,7 @@ void HelloTriangleApplication::createInstance() {
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
         throw std::runtime_error("VkInstance yaratib bo'lmadi!");
     }
-
-    std::cout << color::FIRUZA << debugHeader << "VkInstance muvaffaqiyatli yaratildi!" << color::RESET << std::endl;
+    std::cout << utils::infoLog("VkInstance muvaffaqiyatli yaratildi!");
 }
 
 
@@ -176,7 +179,7 @@ void HelloTriangleApplication::checkRequiredExtensions(const std::vector<const c
             }
         }
         if (!found) {
-            std::cerr << color::QIZIL << errorDebugHeader << required << " extension talab qilindi, lekin topilmadi!" << color::RESET << std::endl;
+            std::cerr << utils::errorLog(std::string(required) + " extension talab qilindi, lekin topilmadi!");
             hasError = true;
         }
     }
@@ -184,7 +187,7 @@ void HelloTriangleApplication::checkRequiredExtensions(const std::vector<const c
         throw std::runtime_error("Kerakli Extensionlar topilmadi!");
     }
     else {
-        std::cout << color::FIRUZA << debugHeader << "Barcha kerakli extensionlar topildi!" << color::RESET << std::endl;
+        std::cout << utils::infoLog("Barcha kerakli extensionlar topildi!");
     }
 }
 
@@ -225,10 +228,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL HelloTriangleApplication::debugCallback(
     (void)pUserData;
 
     if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-        std::cerr << color::QIZIL << errorDebugHeader;
+        std::cerr << color::QIZIL << "---- [ DEBUG ]----";
     }
     else {
-        std::cerr << color::SARIQ << "----[WARNING]---- ";
+        std::cerr << color::SARIQ << "----[ WARNING ]---- ";
     }
     std::cerr << pCallbackData->pMessage << color::RESET << std::endl;
     return VK_FALSE;
@@ -306,11 +309,55 @@ QueueFamilyIndices HelloTriangleApplication::findQueueFamilies(VkPhysicalDevice 
 }
 
 void HelloTriangleApplication::createLogicalDevice() {
+    QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+
+    float queuePriority = 1.0f;
+
+    VkDeviceQueueCreateInfo queueCreateInfo{};
+    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+    queueCreateInfo.queueCount = 1;
+    queueCreateInfo.pQueuePriorities = &queuePriority;
+
+    VkPhysicalDeviceFeatures deviceFeatures{};
+
+    auto deviceExtensions = getRequiredDeviceExtensions(physicalDevice);
+
+    VkDeviceCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    createInfo.queueCreateInfoCount = 1;
+    createInfo.pQueueCreateInfos = &queueCreateInfo;
+    createInfo.pEnabledFeatures = &deviceFeatures;
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+
+    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS){
+        throw std::runtime_error("Logical device yaratib bo'lmadi!");
+    }else{
+        std::cout << utils::infoLog("Logical device yaratildi!");
+    }
+
+    vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphisQueue);
+
 
 }
 
 std::vector<const char*> HelloTriangleApplication::getRequiredDeviceExtensions(VkPhysicalDevice device) {
-    return std::vector<const char*>();
+    std::vector<const char*> extensions;
+
+    uint32_t count = 0;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &count, nullptr);
+
+    std::vector<VkExtensionProperties> available(count);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &count, available.data());
+
+    for (const auto& ext: available){
+        if (strcmp(ext.extensionName, PORTABILITY_SUBSET_EXTENSION) == 0){
+            extensions.push_back(ext.extensionName);
+        }
+    }
+
+    return extensions;
 }
 
 
