@@ -63,16 +63,16 @@ namespace utils {
             }
         }
     }
-    
-    std::string infoLog(const std::string &matn){
+
+    std::string createInfoLog(const std::string& matn) {
         return std::string(color::RESET) + color::FIRUZA + "----[ INFO ]-----" + matn + color::RESET + "\n";
     }
-    
-    std::string errorLog(const std::string &matn){
+
+    std::string createErrorLog(const std::string& matn) {
         return std::string(color::RESET) + color::QIZIL + "----[ ERROR ]-----" + matn + color::RESET + "\n";
     }
-    
-    std::string warningLog(const std::string &matn){
+
+    std::string CreateWarningLog(const std::string& matn) {
         return std::string(color::RESET) + color::SARIQ + "----[ WARNING ]-----" + matn + color::RESET + "\n";
     }
 }

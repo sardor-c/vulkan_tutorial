@@ -23,7 +23,7 @@ namespace utils {
 
     void printPhysicalDeviceVRAM(VkPhysicalDevice device);
 
-    std::string infoLog(const std::string& matn);
-    std::string errorLog(const std::string& matn);
-    std::string warningLog(const std::string& matn);
+    std::string createInfoLog(const std::string& matn);
+    std::string createErrorLog(const std::string& matn);
+    std::string CreateWarningLog(const std::string& matn);
 }

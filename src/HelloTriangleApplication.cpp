@@ -71,13 +71,13 @@ void HelloTriangleApplication::cleanup() {
 void HelloTriangleApplication::createInstance() {
 
     if (enableValidationLayers) {
-            std::cout << utils::infoLog("Validation layer yoqilgan!");
+        std::cout << utils::createInfoLog("Validation layer yoqilgan!");
         if (!checkValidationLayerSupport()) {
             throw std::runtime_error("Validation layer yoqilgan, lekin topilmadi!");
         }
     }
     else {
-            std::cout << utils::infoLog("Validation layer o'chirilgan!");
+        std::cout << utils::createInfoLog("Validation layer o'chirilgan!");
     }
 
     VkApplicationInfo appInfo{};
@@ -119,7 +119,7 @@ void HelloTriangleApplication::createInstance() {
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
         throw std::runtime_error("VkInstance yaratib bo'lmadi!");
     }
-    std::cout << utils::infoLog("VkInstance muvaffaqiyatli yaratildi!");
+    std::cout << utils::createInfoLog("VkInstance muvaffaqiyatli yaratildi!");
 }
 
 
@@ -179,7 +179,7 @@ void HelloTriangleApplication::checkRequiredExtensions(const std::vector<const c
             }
         }
         if (!found) {
-            std::cerr << utils::errorLog(std::string(required) + " extension talab qilindi, lekin topilmadi!");
+            std::cerr << utils::createErrorLog(std::string(required) + " extension talab qilindi, lekin topilmadi!");
             hasError = true;
         }
     }
@@ -187,7 +187,7 @@ void HelloTriangleApplication::checkRequiredExtensions(const std::vector<const c
         throw std::runtime_error("Kerakli Extensionlar topilmadi!");
     }
     else {
-        std::cout << utils::infoLog("Barcha kerakli extensionlar topildi!");
+        std::cout << utils::createInfoLog("Barcha kerakli extensionlar topildi!");
     }
 }
 
@@ -331,10 +331,11 @@ void HelloTriangleApplication::createLogicalDevice() {
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS){
+    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
         throw std::runtime_error("Logical device yaratib bo'lmadi!");
-    }else{
-        std::cout << utils::infoLog("Logical device yaratildi!");
+    }
+    else {
+        std::cout << utils::createInfoLog("Logical device yaratildi!");
     }
 
     vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphisQueue);
@@ -351,8 +352,8 @@ std::vector<const char*> HelloTriangleApplication::getRequiredDeviceExtensions(V
     std::vector<VkExtensionProperties> available(count);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &count, available.data());
 
-    for (const auto& ext: available){
-        if (strcmp(ext.extensionName, PORTABILITY_SUBSET_EXTENSION) == 0){
+    for (const auto& ext : available) {
+        if (strcmp(ext.extensionName, PORTABILITY_SUBSET_EXTENSION) == 0) {
             extensions.push_back(ext.extensionName);
         }
     }
