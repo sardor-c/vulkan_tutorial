@@ -24,6 +24,8 @@ private:
     VkInstance instance = VK_NULL_HANDLE;
     VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    VkDevice device = VK_NULL_HANDLE;
+    VkQueue graphisQueue = VK_NULL_HANDLE;
 
     void initWindow();
     void initVulkan();
@@ -49,5 +51,7 @@ private:
     int rateGpu(VkPhysicalDevice device);
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
+    void createLogicalDevice();
+    std::vector<const char*> getRequiredDeviceExtensions(VkPhysicalDevice device);
 
 };

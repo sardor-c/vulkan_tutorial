@@ -305,6 +305,13 @@ QueueFamilyIndices HelloTriangleApplication::findQueueFamilies(VkPhysicalDevice 
     return indices;
 }
 
+void HelloTriangleApplication::createLogicalDevice() {
+
+}
+
+std::vector<const char*> HelloTriangleApplication::getRequiredDeviceExtensions(VkPhysicalDevice device) {
+    return std::vector<const char*>();
+}
 
 
 
