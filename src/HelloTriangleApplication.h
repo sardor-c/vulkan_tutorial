@@ -10,6 +10,7 @@
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> computeFamily;
+    std::optional<uint32_t> presentFamily;
 
     bool hasGraphicsFamily() const {
         return graphicsFamily.has_value();
@@ -17,6 +18,10 @@ struct QueueFamilyIndices {
 
     bool hasComputeFamily() const {
         return computeFamily.has_value();
+    }
+
+    bool hasPresentFamily() const {
+        return presentFamily.has_value();
     }
 };
 
@@ -28,10 +33,12 @@ private:
     GLFWwindow* window = nullptr;
     VkInstance instance = VK_NULL_HANDLE;
     VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkDevice device = VK_NULL_HANDLE;
     VkQueue graphicsQueue = VK_NULL_HANDLE;
     VkQueue computeQueue = VK_NULL_HANDLE;
+    VkQueue presentQueue = VK_NULL_HANDLE;
 
     void initWindow();
     void initVulkan();
@@ -59,5 +66,7 @@ private:
 
     void createLogicalDevice();
     std::vector<const char*> getRequiredDeviceExtensions(VkPhysicalDevice device);
+
+    void createSurface();
 
 };

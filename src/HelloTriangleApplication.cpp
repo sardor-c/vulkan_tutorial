@@ -46,6 +46,7 @@ void HelloTriangleApplication::initWindow() {
 void HelloTriangleApplication::initVulkan() {
     createInstance();
     setupDebugMessenger();
+    createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
 }
@@ -59,6 +60,7 @@ void HelloTriangleApplication::mainLoop() {
 
 void HelloTriangleApplication::cleanup() {
     vkDestroyDevice(device, nullptr);
+    vkDestroySurfaceKHR(instance, surface, nullptr);
 
     if (enableValidationLayers) {
         utils::DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
@@ -390,5 +392,13 @@ std::vector<const char*> HelloTriangleApplication::getRequiredDeviceExtensions(V
     return extensions;
 }
 
+void HelloTriangleApplication::createSurface() {
+    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+        throw std::runtime_error("Window surface yaratib bo'lmadi!");
+    }
+    else {
+        std::cout << utils::createInfoLog("Window surface yaratildi!");
+    }
+}
 
 
