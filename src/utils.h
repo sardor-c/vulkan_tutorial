@@ -20,7 +20,7 @@ namespace utils {
         const VkAllocationCallbacks* pAllocator
     );
 
-    void printDeviceQueueFamilies(VkPhysicalDevice device);
+    void printDeviceQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
     void printDeviceExtensions(const std::vector<VkExtensionProperties>& extensions);
 
     void printPhysicalDeviceVRAM(VkPhysicalDevice device);

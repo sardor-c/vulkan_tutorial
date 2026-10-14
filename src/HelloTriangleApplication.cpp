@@ -262,11 +262,12 @@ void HelloTriangleApplication::pickPhysicalDevice() {
     if (physicalDevice == VK_NULL_HANDLE) {
         throw std::runtime_error("Mos GPU topilmadi!");
     }
+    this->queueFamilyIndices = findQueueFamilies(physicalDevice); 
 
     VkPhysicalDeviceProperties properties;
     vkGetPhysicalDeviceProperties(physicalDevice, &properties);
     std::cout << color::YASHIL << debugHeader << "Tanlangan GPU: " << properties.deviceName << " (rate: " << highScore << " )" << color::RESET << std::endl;
-    utils::printDeviceQueueFamilies(physicalDevice);
+    utils::printDeviceQueueFamilies(physicalDevice, surface);
     utils::printPhysicalDeviceVRAM(physicalDevice);
 }
 
@@ -298,8 +299,15 @@ QueueFamilyIndices HelloTriangleApplication::findQueueFamilies(VkPhysicalDevice 
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
     for (uint32_t i = 0; i < queueFamilyCount; i++) {
+        VkBool32 surfaceSupport = VK_FALSE;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &surfaceSupport);
+
         if ((queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && !indices.graphicsFamily.has_value()) {
-            indices.graphicsFamily = i;
+            if (surfaceSupport || (i == queueFamilyCount-1)){
+                indices.graphicsFamily = i;
+            }else{
+                continue;
+            }
         }
 
         if ((queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT) && !(queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && !indices.computeFamily.has_value()) {
@@ -321,17 +329,14 @@ QueueFamilyIndices HelloTriangleApplication::findQueueFamilies(VkPhysicalDevice 
     if (!indices.hasComputeFamily()) {
         indices.computeFamily = indices.graphicsFamily;
     }
-
     return indices;
 }
 
 void HelloTriangleApplication::createLogicalDevice() {
-    QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-
     std::set<uint32_t> uniqueQueueFmilies = {
-        indices.graphicsFamily.value(),
-        indices.computeFamily.value(),
-        indices.presentFamily.value()
+        queueFamilyIndices.graphicsFamily.value(),
+        queueFamilyIndices.computeFamily.value(),
+        queueFamilyIndices.presentFamily.value()
     };
 
     float queuePriority = 1.0f;
@@ -366,9 +371,9 @@ void HelloTriangleApplication::createLogicalDevice() {
         std::cout << utils::createInfoLog("Logical device yaratildi!");
     }
 
-    vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
-    vkGetDeviceQueue(device, indices.computeFamily.value(), 0, &computeQueue);
-    vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+    vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily.value(), 0, &graphicsQueue);
+    vkGetDeviceQueue(device, queueFamilyIndices.computeFamily.value(), 0, &computeQueue);
+    vkGetDeviceQueue(device, queueFamilyIndices.presentFamily.value(), 0, &presentQueue);
 
 }
 

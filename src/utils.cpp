@@ -29,7 +29,7 @@ namespace utils {
         }
     }
 
-    void printDeviceQueueFamilies(VkPhysicalDevice device) {
+    void printDeviceQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) {
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
@@ -40,11 +40,14 @@ namespace utils {
         std::cout << color::OQ << color::QALIN << "----------------[ Queue Families] ------------------" << std::endl;
         for (uint32_t i = 0; i < queueFamilies.size(); i++) {
             const auto& f = queueFamilies[i];
+            VkBool32 surfaceSupport = VK_FALSE;
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &surfaceSupport);
             std::cout << color::RESET << color::OQ << "|   " << color::RESET << color::YASHIL;
             std::cout << "oila " << i << ": " << f.queueCount << " ta navbat |"
                 << ((f.queueFlags & VK_QUEUE_GRAPHICS_BIT) ? " GRAPHICS" : "")
                 << ((f.queueFlags & VK_QUEUE_COMPUTE_BIT) ? " COMPUTE" : "")
                 << ((f.queueFlags & VK_QUEUE_TRANSFER_BIT) ? " TRANSFER" : "")
+                << ((surfaceSupport == VK_TRUE) ? " PRESENT" : "")
                 << std::endl;
         }
         std::cout << color::OQ << color::QALIN << "----------------------------------------------------" << color::RESET << std::endl;
