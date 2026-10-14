@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <string>
+#include <vector>
 
 
 namespace utils {
@@ -20,6 +21,7 @@ namespace utils {
     );
 
     void printDeviceQueueFamilies(VkPhysicalDevice device);
+    void printDeviceExtensions(const std::vector<VkExtensionProperties>& extensions);
 
     void printPhysicalDeviceVRAM(VkPhysicalDevice device);
 

@@ -228,12 +228,11 @@ VKAPI_ATTR VkBool32 VKAPI_CALL HelloTriangleApplication::debugCallback(
     (void)pUserData;
 
     if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-        std::cerr << color::QIZIL << "---- [ DEBUG ]----";
+        std::cerr << utils::createErrorLog(pCallbackData->pMessage);
     }
     else {
-        std::cerr << color::SARIQ << "----[ WARNING ]---- ";
+        std::cerr << utils::CreateWarningLog(pCallbackData->pMessage);
     }
-    std::cerr << pCallbackData->pMessage << color::RESET << std::endl;
     return VK_FALSE;
 }
 
@@ -271,7 +270,7 @@ void HelloTriangleApplication::pickPhysicalDevice() {
 
 int HelloTriangleApplication::rateGpu(VkPhysicalDevice device) {
     QueueFamilyIndices indices = findQueueFamilies(device);
-    if (!indices.isComplete()) {
+    if (!indices.hasGraphicsFamily()) {
         return 0;
     }
 
@@ -296,13 +295,22 @@ QueueFamilyIndices HelloTriangleApplication::findQueueFamilies(VkPhysicalDevice 
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
     for (uint32_t i = 0; i < queueFamilyCount; i++) {
-        if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+        if ((queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && !indices.graphicsFamily.has_value()) {
             indices.graphicsFamily = i;
         }
 
-        if (indices.isComplete()) {
+        if ((queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT) && !(queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && !indices.computeFamily.has_value()) {
+            indices.computeFamily = i;
+        }
+
+
+        if (indices.hasGraphicsFamily() && indices.hasComputeFamily()) {
             break;
         }
+    }
+
+    if (!indices.hasComputeFamily()) {
+        indices.computeFamily = indices.graphicsFamily;
     }
 
     return indices;
@@ -311,13 +319,22 @@ QueueFamilyIndices HelloTriangleApplication::findQueueFamilies(VkPhysicalDevice 
 void HelloTriangleApplication::createLogicalDevice() {
     QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
-    float queuePriority = 1.0f;
+    float graphicQueuePriority = 1.0f;
 
-    VkDeviceQueueCreateInfo queueCreateInfo{};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
-    queueCreateInfo.queueCount = 1;
-    queueCreateInfo.pQueuePriorities = &queuePriority;
+    VkDeviceQueueCreateInfo graphicQueueCreateInfo{};
+    graphicQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    graphicQueueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+    graphicQueueCreateInfo.queueCount = 1;
+    graphicQueueCreateInfo.pQueuePriorities = &graphicQueuePriority;
+
+
+    float computeQueuePriority = 1.0f;
+
+    VkDeviceQueueCreateInfo computeQueueCreateInfo{};
+    computeQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    computeQueueCreateInfo.queueFamilyIndex = indices.computeFamily.value();
+    computeQueueCreateInfo.queueCount = 1;
+    computeQueueCreateInfo.pQueuePriorities = &computeQueuePriority;
 
     VkPhysicalDeviceFeatures deviceFeatures{};
 
@@ -325,8 +342,15 @@ void HelloTriangleApplication::createLogicalDevice() {
 
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.queueCreateInfoCount = 1;
-    createInfo.pQueueCreateInfos = &queueCreateInfo;
+
+    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+    queueCreateInfos.push_back(graphicQueueCreateInfo);
+    if (indices.graphicsFamily.value() != indices.computeFamily.value()) {
+        queueCreateInfos.push_back(computeQueueCreateInfo);
+    }
+    createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+    createInfo.pQueueCreateInfos = queueCreateInfos.data();
+
     createInfo.pEnabledFeatures = &deviceFeatures;
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
@@ -338,7 +362,10 @@ void HelloTriangleApplication::createLogicalDevice() {
         std::cout << utils::createInfoLog("Logical device yaratildi!");
     }
 
-    vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphisQueue);
+    vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
+    if (indices.graphicsFamily.value() != indices.computeFamily.value()) {
+        vkGetDeviceQueue(device, indices.computeFamily.value(), 0, &computeQueue);
+    }
 
 
 }
@@ -354,9 +381,11 @@ std::vector<const char*> HelloTriangleApplication::getRequiredDeviceExtensions(V
 
     for (const auto& ext : available) {
         if (strcmp(ext.extensionName, PORTABILITY_SUBSET_EXTENSION) == 0) {
-            extensions.push_back(ext.extensionName);
+            extensions.push_back(PORTABILITY_SUBSET_EXTENSION);
         }
     }
+
+    //utils::printDeviceExtensions(available);
 
     return extensions;
 }

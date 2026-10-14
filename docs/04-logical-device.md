@@ -121,6 +121,11 @@ std::vector<const char*> HelloTriangleApplication::getRequiredDeviceExtensions(V
 - **`vkEnumerateDeviceExtensionProperties`** instance'dagi `vkEnumerateInstanceExtensionProperties` ning device uchun o'xshashi. Unda ham "ikki marta chaqirish" uslubi ishlatiladi. Ikkinchi argument (`nullptr`) layer nomi; hamma extension'lar kerak bo'lgani uchun uni bo'sh qoldiramiz.
 - **Nima uchun `#ifdef __APPLE__` emas?** Bu yerda `#ifdef` kerak emas. Biz GPU'ning o'zidan so'raymiz: extension bor bo'lsa, yoqamiz. Windows'dagi NVIDIA'da u yo'q, shuning uchun ro'yxat bo'sh qoladi. macOS'da u bor va yoqiladi. Bu usul har qanday platformada to'g'ri ishlaydi.
 - **Nima uchun makros emas, matn?** `VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME` makrosi `vulkan_beta.h` faylida joylashgan. U faqat `VK_ENABLE_BETA_EXTENSIONS` e'lon qilinganda ulanadi. Oddiy matn bilan bu muammo bo'lmaydi.
+- **⚠️ `push_back(ext.extensionName)` yozmang!** `ext.extensionName` `available` vector'i **ichidagi** massiv. Funksiya tugashi bilan `available` o'chiriladi va pointer bo'shatilgan xotiraga ishora qilib qoladi. Sinovda shunday bo'ldi: extension nomi o'rniga xotiradagi boshqa ma'lumot (`XXXX...`) o'qildi va `vkCreateDevice` quyidagi xato bilan muvaffaqiyatsiz tugadi:
+  ```
+  loader_validate_device_extensions: Device ppEnabledExtensionNames contains string that is too long
+  ```
+  `PORTABILITY_SUBSET_EXTENSION` esa matn literali (`"..."`). Literallar dastur ishlab turgan **butun vaqt davomida** xotirada turadi, shuning uchun ularning pointer'i doim to'g'ri bo'ladi.
 
 ---
 
@@ -262,3 +267,20 @@ of pQueueCreateInfos must be unique ... (VUID-VkDeviceCreateInfo-queueFamilyInde
 ```
 
 Shuning uchun oilalar **har xil** bo'lgandagina ikkinchi struct'ni qo'shing. Xuddi shu muammo 5-darsda ham uchraydi, u yerda uni chiroyliroq usul bilan hal qilamiz.
+
+**Yana ikkita tuzoq:**
+
+1. **Navbatlarni emas, oila raqamlarini solishtiring.** `if (graphicsQueue == computeQueue)` noto'g'ri: `vkCreateDevice` dan oldin ikkala navbat ham `VK_NULL_HANDLE`, shuning uchun bu shart **doim rost** bo'ladi. To'g'risi `indices.graphicsFamily.value() != indices.computeFamily.value()`.
+2. **Vector `vkCreateDevice` gacha "tirik" bo'lishi kerak.** Uni `if`/`else` ichida e'lon qilsangiz, `}` da o'chiriladi va `pQueueCreateInfos` bo'shatilgan xotiraga ishora qilib qoladi. Bu 2-darsdagi `debugCreateInfo` bilan bir xil holat. Vector'ni `if` dan oldin e'lon qiling:
+
+```cpp
+std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+queueCreateInfos.push_back(graphicsQueueCreateInfo);
+if (indices.graphicsFamily.value() != indices.computeFamily.value()) {
+    queueCreateInfos.push_back(computeQueueCreateInfo);
+}
+createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+createInfo.pQueueCreateInfos = queueCreateInfos.data();
+```
+
+`vkGetDeviceQueue` ni esa ikkala navbat uchun ham shartsiz chaqiring. Oilalar bir xil bo'lsa, Vulkan ikkalasiga **bir xil** navbatni qaytaradi va bu to'g'ri natija.

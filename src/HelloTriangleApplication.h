@@ -9,9 +9,14 @@
 
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
+    std::optional<uint32_t> computeFamily;
 
-    bool isComplete() const {
+    bool hasGraphicsFamily() const {
         return graphicsFamily.has_value();
+    }
+
+    bool hasComputeFamily() const {
+        return computeFamily.has_value();
     }
 };
 
@@ -25,7 +30,8 @@ private:
     VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkDevice device = VK_NULL_HANDLE;
-    VkQueue graphisQueue = VK_NULL_HANDLE;
+    VkQueue graphicsQueue = VK_NULL_HANDLE;
+    VkQueue computeQueue = VK_NULL_HANDLE;
 
     void initWindow();
     void initVulkan();

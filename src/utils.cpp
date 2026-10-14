@@ -50,6 +50,13 @@ namespace utils {
         std::cout << color::OQ << color::QALIN << "----------------------------------------------------" << color::RESET << std::endl;
     }
 
+    void printDeviceExtensions(const std::vector<VkExtensionProperties>& extensions) {
+        std::cout << utils::createInfoLog("-------- Device Extensions ------- ");
+        for (const auto& ext : extensions) {
+            std::cout << "|--- " << ext.extensionName << std::endl;
+        }
+    }
+
     void printPhysicalDeviceVRAM(VkPhysicalDevice device) {
         VkPhysicalDeviceMemoryProperties memProps;
         vkGetPhysicalDeviceMemoryProperties(device, &memProps);

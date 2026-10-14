@@ -9,6 +9,7 @@ Har bir dars alohida faylda. Kodni o'zingiz yozasiz, darsda esa nima va nima uch
 | 2 | [Validation layer'lar](02-validation-layers.md) | Vulkan xatolaringizni aytib turadi |
 | 3 | [GPU tanlash va queue family'lar](03-physical-device.md) | RTX 3060 tanlanadi, GRAPHICS oilasi topiladi |
 | 4 | [Logical device va graphics queue](04-logical-device.md) | GPU bilan aloqa ochiladi, navbat olinadi |
+| 5 | [Window surface va present queue](05-window-surface.md) | Vulkan oynaga ulanadi, present navbati olinadi |
 
 ### Qo'shimcha
 
