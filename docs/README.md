@@ -10,6 +10,7 @@ Har bir dars alohida faylda. Kodni o'zingiz yozasiz, darsda esa nima va nima uch
 | 3 | [GPU tanlash va queue family'lar](03-physical-device.md) | RTX 3060 tanlanadi, GRAPHICS oilasi topiladi |
 | 4 | [Logical device va graphics queue](04-logical-device.md) | GPU bilan aloqa ochiladi, navbat olinadi |
 | 5 | [Window surface va present queue](05-window-surface.md) | Vulkan oynaga ulanadi, present navbati olinadi |
+| 6 | [Swapchain](06-swapchain.md) | Ekranga chiqariladigan 3 ta rasm yaratiladi |
 
 ### Qo'shimcha
 
