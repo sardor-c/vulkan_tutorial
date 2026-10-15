@@ -20,6 +20,10 @@ namespace {
 
     constexpr const char* PORTABILITY_SUBSET_EXTENSION = "VK_KHR_portability_subset";
 
+    std::vector<const char*> requiredDeviceExtensions = {
+        VK_KHR_SURFACE_EXTENSION_NAME
+    };
+
 #ifdef NDEBUG
     constexpr bool enableValidationLayers = false;
 #else
@@ -380,7 +384,7 @@ void HelloTriangleApplication::createLogicalDevice() {
 }
 
 std::vector<const char*> HelloTriangleApplication::getRequiredDeviceExtensions(VkPhysicalDevice device) {
-    std::vector<const char*> extensions;
+    std::vector<const char*> extensions = requiredDeviceExtensions;
 
     uint32_t count = 0;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &count, nullptr);
@@ -406,6 +410,28 @@ void HelloTriangleApplication::createSurface() {
     else {
         std::cout << utils::createInfoLog("Window surface yaratildi!");
     }
+}
+
+bool HelloTriangleApplication::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+    uint32_t availableDeviceExtensionCount = 0;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &availableDeviceExtensionCount, nullptr);
+
+    std::vector<VkExtensionProperties> availableDeviceExtensions(availableDeviceExtensionCount);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &availableDeviceExtensionCount, availableDeviceExtensions.data());
+
+    for (const char* required : requiredDeviceExtensions) {
+        bool found = false;
+        for (const auto& available : availableDeviceExtensions) {
+            if (strcmp(required, available.extensionName) == 0) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return false;
+        }
+    }
+    return true;
 }
 
 
