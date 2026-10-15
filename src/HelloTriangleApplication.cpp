@@ -335,7 +335,7 @@ QueueFamilyIndices HelloTriangleApplication::findQueueFamilies(VkPhysicalDevice 
 }
 
 void HelloTriangleApplication::createLogicalDevice() {
-    std::set<uint32_t> uniqueQueueFmilies = {
+    std::set<uint32_t> uniqueQueueFamilies = {
         queueFamilyIndices.graphicsFamily.value(),
         queueFamilyIndices.computeFamily.value(),
         queueFamilyIndices.presentFamily.value()
@@ -344,7 +344,7 @@ void HelloTriangleApplication::createLogicalDevice() {
     float queuePriority = 1.0f;
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    for (uint32_t family : uniqueQueueFmilies) {
+    for (uint32_t family : uniqueQueueFamilies) {
         VkDeviceQueueCreateInfo queueCreateInfo{};
         queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queueCreateInfo.queueFamilyIndex = family;
