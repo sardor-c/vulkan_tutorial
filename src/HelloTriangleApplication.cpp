@@ -262,7 +262,7 @@ void HelloTriangleApplication::pickPhysicalDevice() {
     if (physicalDevice == VK_NULL_HANDLE) {
         throw std::runtime_error("Mos GPU topilmadi!");
     }
-    this->queueFamilyIndices = findQueueFamilies(physicalDevice); 
+    this->queueFamilyIndices = findQueueFamilies(physicalDevice);
 
     VkPhysicalDeviceProperties properties;
     vkGetPhysicalDeviceProperties(physicalDevice, &properties);
@@ -298,32 +298,34 @@ QueueFamilyIndices HelloTriangleApplication::findQueueFamilies(VkPhysicalDevice 
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-    for (uint32_t i = 0; i < queueFamilyCount; i++) {
-        VkBool32 surfaceSupport = VK_FALSE;
-        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &surfaceSupport);
+    std::optional<uint32_t> firstGraphics, firstPresent;
 
-        if ((queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && !indices.graphicsFamily.has_value()) {
-            if (surfaceSupport || (i == queueFamilyCount-1)){
-                indices.graphicsFamily = i;
-            }else{
-                continue;
-            }
+    for (uint32_t i = 0; i < queueFamilyCount; i++) {
+        VkBool32 presentSupport = VK_FALSE;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+        bool isGraphics = queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT;
+
+        if (isgraph && presentSupport && !indices.hasGraphicsFamily()) {
+            indices.graphicsFamily = i;
+            indices.presentFamily = i;
         }
+
+        if (isGraphics && !firstGraphics.has_value()) firstGraphics = i;
+        if (presentSupport && !firstPresent.has_value()) firstPresent = i;
+
 
         if ((queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT) && !(queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && !indices.computeFamily.has_value()) {
             indices.computeFamily = i;
         }
 
-        VkBool32 presentSupport = VK_FALSE;
-        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
-
-        if (presentSupport && !indices.hasPresentFamily()){
-            indices.presentFamily = i;
-        }
-
         if (indices.hasGraphicsFamily() && indices.hasComputeFamily() && indices.hasPresentFamily()) {
             break;
         }
+    }
+
+    if (!indices.hasGraphicsFamily()) {
+        indices.graphicsFamily = firstGraphics;
+        indices.presentFamily = firstPresent;
     }
 
     if (!indices.hasComputeFamily()) {
@@ -342,7 +344,7 @@ void HelloTriangleApplication::createLogicalDevice() {
     float queuePriority = 1.0f;
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    for (uint32_t family: uniqueQueueFmilies){
+    for (uint32_t family : uniqueQueueFmilies) {
         VkDeviceQueueCreateInfo queueCreateInfo{};
         queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queueCreateInfo.queueFamilyIndex = family;
